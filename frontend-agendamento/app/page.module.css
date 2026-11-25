@@ -1,0 +1,58 @@
+
+.container {
+  min-height: 100vh;
+  background-color: #111;
+  color: white;
+  padding: 40px;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 80px;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: #d4a44c;
+}
+
+.menu a {
+  color: white;
+  text-decoration: none;
+  margin-left: 25px;
+}
+
+.conteudo {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.conteudo h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.conteudo p {
+  color: #aaa;
+  font-size: 18px;
+  margin-bottom: 35px;
+}
+
+.botao {
+  background-color: #d4a44c;
+  color: #111;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.botao:hover {
+  background-color: #bd8c35;
+}

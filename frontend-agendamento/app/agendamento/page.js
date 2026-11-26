@@ -1,22 +1,74 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 
 export default function Agendamento() {
   const [nome, setNome] = useState("");
   const [servico, setServico] = useState("");
+  const [servicos, setServicos] = useState([]);
   const [data, setData] = useState("");
   const [horario, setHorario] = useState("");
 
-  function agendar() {
-    if (nome === "" || servico === "" || data === "" || horario === "") {
+  
+useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
+
+  const cliente = JSON.parse(localStorage.getItem("clienteLogado"));
+
+  if (cliente) {
+    setNome(cliente.nome);
+  }
+
+  async function buscarServicos() {
+    const resposta = await fetch("/api/servicos");
+    const dados = await resposta.json();
+
+    setServicos(dados);
+  }
+
+  buscarServicos();
+}, []);
+
+
+  async function agendar() {
+    if (servico === "" || data === "" || horario === "") {
       alert("Preencha todos os campos!");
       return;
     }
 
-    alert("Agendamento realizado com sucesso!");
+    const token = localStorage.getItem("token");
+
+    const resposta = await fetch("/api/agendamento", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        servicoId: servico,
+        data,
+        horario
+      })
+    });
+
+    const resultado = await resposta.json();
+
+    if (resposta.ok) {
+      alert("Agendamento realizado com sucesso!");
+
+      setServico("");
+      setData("");
+      setHorario("");
+    } else {
+      alert(resultado.mensagem);
+    }
   }
 
   return (
@@ -28,17 +80,19 @@ export default function Agendamento() {
         <label>Seu nome:</label>
         <input
           type="text"
-          placeholder="Digite seu nome"
           value={nome}
-          onChange={(e) => setNome(e.target.value)}
+          readOnly
         />
 
         <label>Escolha o serviço:</label>
         <select value={servico} onChange={(e) => setServico(e.target.value)}>
           <option value="">Selecione</option>
-          <option value="Corte de cabelo">Corte de cabelo</option>
-          <option value="Barba">Barba</option>
-          <option value="Corte e barba">Corte e barba</option>
+
+          {servicos.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.nome} - R$ {item.preco.toFixed(2)}
+            </option>
+          ))}
         </select>
 
         <label>Escolha a data:</label>

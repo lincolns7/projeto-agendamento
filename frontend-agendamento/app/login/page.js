@@ -7,27 +7,49 @@ import styles from "./page.module.css";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  function entrar() {
+  async function entrar() {
     if (email === "" || senha === "") {
       alert("Preencha todos os campos!");
       return;
     }
 
-    const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+    setCarregando(true);
 
-    const cliente = clientes.find(
-      (cliente) => cliente.email === email && cliente.senha === senha
-    );
+    try {
+      const resposta = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          senha
+        })
+      });
 
-    if (cliente) {
-      localStorage.setItem("clienteLogado", JSON.stringify(cliente));
+      const dados = await resposta.json();
 
-      alert("Bem-vindo, " + cliente.nome + "!");
+      if (resposta.ok) {
+        localStorage.setItem("token", dados.token);
 
-      window.location.href = "/agendamento";
-    } else {
-      alert("E-mail ou senha incorretos!");
+        localStorage.setItem(
+          "clienteLogado",
+          JSON.stringify(dados.usuario)
+        );
+
+        alert("Bem-vindo, " + dados.usuario.nome + "!");
+
+        window.location.href = "/agendamento";
+      } else {
+        alert(dados.mensagem);
+      }
+
+    } catch (error) {
+      alert("Erro ao conectar com o servidor!");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -53,7 +75,9 @@ export default function Login() {
           onChange={(e) => setSenha(e.target.value)}
         />
 
-        <button onClick={entrar}>Entrar</button>
+        <button onClick={entrar} disabled={carregando}>
+          {carregando ? "Entrando..." : "Entrar"}
+        </button>
 
         <a href="/cadastro">Não tenho uma conta</a>
         <a href="/">Voltar para o início</a>

@@ -8,33 +8,42 @@ export default function Cadastro() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  function cadastrar() {
+  async function cadastrar() {
     if (nome === "" || email === "" || senha === "") {
       alert("Preencha todos os campos!");
       return;
     }
 
-    const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+    setCarregando(true);
 
-    const existe = clientes.find((cliente) => cliente.email === email);
+    try {
+      const resposta = await fetch("/api/usuarios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nome,
+          email,
+          senha
+        })
+      });
 
-    if (existe) {
-      alert("Este e-mail já está cadastrado!");
-      return;
+      const dados = await resposta.json();
+
+      alert(dados.mensagem);
+
+      if (resposta.ok) {
+        window.location.href = "/login";
+      }
+
+    } catch (error) {
+      alert("Erro ao conectar com o servidor!");
+    } finally {
+      setCarregando(false);
     }
-
-    clientes.push({
-      nome: nome,
-      email: email,
-      senha: senha
-    });
-
-    localStorage.setItem("clientes", JSON.stringify(clientes));
-
-    alert("Cadastro realizado com sucesso!");
-
-    window.location.href = "/login";
   }
 
   return (
@@ -44,15 +53,29 @@ export default function Cadastro() {
 
       <div className={styles.formulario}>
         <label>Nome completo:</label>
-        <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} />
+        <input
+          type="text"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+        />
 
         <label>E-mail:</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
         <label>Senha:</label>
-        <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} />
+        <input
+          type="password"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />
 
-        <button onClick={cadastrar}>Cadastrar</button>
+        <button onClick={cadastrar} disabled={carregando}>
+          {carregando ? "Cadastrando..." : "Cadastrar"}
+        </button>
 
         <a href="/login">Já tenho uma conta</a>
       </div>
